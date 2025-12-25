@@ -1,4 +1,3 @@
-# main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import List, Optional, Dict, Any
@@ -158,4 +157,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
