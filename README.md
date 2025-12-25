@@ -1,36 +1,55 @@
-# Pereval API
+О проекте
 
-API для добавления и модерации перевалов.
+Pereval API — RESTful веб-сервис для сбора и модерации данных о горных перевалах, разработанный для Федерации спортивного туризма России (ФСТР).
+Цели проекта
 
-## Установка
+    Для туристов: Добавление информации о покоренных перевалах через API
 
-1. Клонируйте репозиторий
-2. Установите PostgreSQL
-3. Создайте базу данных: `createdb pereval`
-4. Настройте переменные окружения в `.env`
-5. Установите зависимости: `pip install -r requirements.txt`
-6. Инициализируйте БД: `python init_db.py`
-7. Запустите сервер: `uvicorn main:app --reload`
+    Для модераторов ФСТР: Проверка и верификация добавленных данных
 
-## API Endpoints
+    Для системы: Централизованное хранение данных о перевалах с системой модерации
 
-- `POST /submitData` - добавление нового перевала
-- `GET /` - информация о API
-- `GET /health` - проверка здоровья
+Основные возможности
 
-## Пример запроса
+    Добавление новых перевалов с координатами и изображениями
 
-```bash
+    Система модерации с 4 статусами
+
+    Редактирование записей (только со статусом "new")
+
+    Поиск перевалов по пользователю
+
+    Полная валидация входных данных
+
+    Автоматическая документация API
+
+    Комплексное тестирование
+
+Установка и запуск
+Предварительные требования
+
+    Python 3.8+
+
+    PostgreSQL 12+
+
+    pip (менеджер пакетов Python)
+    
+Примеры запросов
+1. Добавление нового перевала
+bash
+
 curl -X POST "http://localhost:8000/submitData" \
   -H "Content-Type: application/json" \
   -d '{
     "beauty_title": "пер.",
     "title": "Пхия",
+    "other_titles": "Триев",
+    "connect": "",
     "add_time": "2021-09-22 13:18:13",
     "user": {
-      "email": "test@mail.ru",
-      "fam": "Иванов",
-      "name": "Иван",
+      "email": "user@example.com",
+      "fam": "Пупкин",
+      "name": "Василий",
       "otc": "Иванович",
       "phone": "+7 999 123 45 67"
     },
@@ -45,5 +64,148 @@ curl -X POST "http://localhost:8000/submitData" \
       "autumn": "1А",
       "spring": ""
     },
-    "images": []
+    "images": [
+      {
+       "data": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+        "title": "Вид с перевала"
+      }
+    ]
   }'
+
+Успешный ответ:
+json
+
+{
+  "status": 200,
+  "message": "Отправлено успешно",
+  "id": 1
+}
+
+Пример теста
+python
+
+def test_full_workflow():
+    """Полный рабочий процесс: создание → получение → редактирование"""
+    
+    # 1. Создание перевала
+    response = client.post("/submitData", json={
+        "title": "Тестовый перевал",
+        "add_time": "2024-01-15 10:30:00",
+        "user": {
+            "email": "test@example.com",
+            "fam": "Тестов",
+            "name": "Тест",
+            "phone": "+7 999 888 77 66"
+        },
+        "coords": {
+            "latitude": "45.1234",
+            "longitude": "7.5678",
+            "height": "1500"
+        },
+        "level": {
+            "summer": "1А"
+        }
+    })
+    
+    assert response.status_code == 200
+    pereval_id = response.json()["id"]
+    
+    # 2. Получение созданного перевала
+    response = client.get(f"/submitData/{pereval_id}")
+    assert response.status_code == 200
+    assert response.json()["status"] == "new"
+    
+    # 3. Редактирование перевала
+    response = client.patch(f"/submitData/{pereval_id}", json={
+        "title": "Обновленное название"
+    })
+    assert response.status_code == 200
+    assert response.json()["state"] == 1
+    
+    # 4. Проверка изменений
+    response = client.get(f"/submitData/{pereval_id}")
+    assert response.json()["title"] == "Обновленное название"
+
+    Описание файлов
+main.py
+
+Главный файл приложения FastAPI. Содержит:
+
+    Модели Pydantic для валидации данных
+
+    Все endpoint-ы API
+
+    Конфигурацию приложения
+
+    Middleware (CORS и другие)
+
+database.py
+
+Класс Database для работы с PostgreSQL. Содержит методы:
+
+    add_pereval() - добавление нового перевала
+
+    get_pereval_by_id() - получение перевала по ID
+
+    update_pereval() - редактирование перевала
+
+    get_pereval_by_email() - получение перевалов по email
+
+    Подключение к БД с использованием переменных окружения
+
+init_db.py
+
+Скрипт для инициализации базы данных:
+
+    Создание всех необходимых таблиц
+
+    Создание индексов для производительности
+
+    Добавление тестовых данных (опционально)
+
+test_api.py
+
+Полный набор тестов для API:
+
+    Unit тесты для отдельных функций
+
+    Интеграционные тесты для работы с БД
+
+    End-to-end тесты для полного рабочего процесса
+
+
+Технические требования
+
+Минимальные требования
+
+    Python: 3.8+
+
+    PostgreSQL: 12+
+
+    RAM: 512 MB
+
+    Диск: 100 MB свободного места
+
+Рекомендуемые требования
+
+    Python: 3.10+
+
+    PostgreSQL: 14+
+
+    RAM: 1 GB
+
+    Диск: 500 MB свободного места
+
+    CPU: 2+ ядра
+
+Зависимости
+
+    FastAPI: Веб-фреймворк
+
+    Uvicorn: ASGI сервер
+
+    Psycopg2: Адаптер PostgreSQL для Python
+
+    Pydantic: Валидация данных
+
+    Python-dotenv: Работа с переменными окружения
