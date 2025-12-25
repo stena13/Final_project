@@ -1,4 +1,3 @@
-# database.py
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -159,4 +158,5 @@ class Database:
         """Закрытие соединения с БД"""
         if self.conn:
             self.conn.close()
+
             print("🔌 Соединение с БД закрыто")
